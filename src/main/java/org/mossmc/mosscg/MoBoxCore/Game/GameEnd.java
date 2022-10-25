@@ -94,22 +94,8 @@ public class GameEnd {
 //        deletefile(worldNether);
 //        deletefile(worldEnd);
         boolean randomMap = Main.getConfig.getBoolean("randomMap");
-        String os = System.getProperty("os.name");
-        if (randomMap && (StringUtils.containsIgnoreCase(os, "linux") || StringUtils.containsIgnoreCase(os, "mac"))) {
+        if (randomMap) {
             Bukkit.shutdown();
-            String shellPath = Main.getConfig.getString("shellPath");
-
-            Main.logger.info("已开启随机地图，执行外部shell");
-            Runtime runtime = Runtime.getRuntime();
-            // 异步执行，无需等待
-            CompletableFuture.runAsync(() -> {
-                try {
-                    runtime.exec(shellPath);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                Main.logger.info("shell脚本执行成功。");
-            });
             return;
         }
         Bukkit.reload();
