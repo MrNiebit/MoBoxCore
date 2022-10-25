@@ -13,6 +13,11 @@ countdownSound: BLOCK_DISPENSER_FAIL
 #高版本用ENTITY_ENDER_DRAGON_GROWL
 gameStartSound: ENTITY_ENDER_DRAGON_GROWL
 
+
+# 随机地图
+randomMap: true
+shellPath: /Users/gitsilence/games/mc_restart.sh
+
 #BC信息通道
 #原版Bungeecord就填BungeeCord
 #使用PlayerBalancer就填playerbalancer:main

@@ -1,13 +1,24 @@
 package org.mossmc.mosscg.MoBoxCore.Game;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.WorldCreator;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.FileUtil;
+import org.bukkit.util.StringUtil;
 import org.mossmc.mosscg.MoBoxCore.Bungee.BungeeChannel;
 import org.mossmc.mosscg.MoBoxCore.Bungee.BungeeTeleport;
 import org.mossmc.mosscg.MoBoxCore.Listener.ListenerInventoryClick;
 import org.mossmc.mosscg.MoBoxCore.Listener.ListenerPlayerInteract;
 import org.mossmc.mosscg.MoBoxCore.Main;
+
+import javax.annotation.processing.Processor;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class GameEnd {
     public static void startEnd() {
@@ -68,8 +79,67 @@ public class GameEnd {
                     }
 
                 });
-                Bukkit.shutdown();
+                reloadServer();
             }
         }.runTaskLater(Main.instance,20*30);
+    }
+
+    private static void reloadServer() {
+//        String projectPath = System.getProperty("user.dir");
+//        Main.logger.info("base path: " + projectPath);
+//        String world = projectPath + "/world";
+//        String worldNether = projectPath + "/world_nether";
+//        String worldEnd = projectPath + "/world_the_end";
+//        deletefile(world);
+//        deletefile(worldNether);
+//        deletefile(worldEnd);
+        boolean randomMap = Main.getConfig.getBoolean("randomMap");
+        String os = System.getProperty("os.name");
+        if (randomMap && (StringUtils.containsIgnoreCase(os, "linux") || StringUtils.containsIgnoreCase(os, "mac"))) {
+            Bukkit.shutdown();
+            String shellPath = Main.getConfig.getString("shellPath");
+
+            Main.logger.info("已开启随机地图，执行外部shell");
+            Runtime runtime = Runtime.getRuntime();
+            // 异步执行，无需等待
+            CompletableFuture.runAsync(() -> {
+                try {
+                    runtime.exec(shellPath);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                Main.logger.info("shell脚本执行成功。");
+            });
+            return;
+        }
+        Bukkit.reload();
+    }
+
+    public static void deletefile(String delpath){
+        File file = new File(delpath);
+        if (!file.exists()) {
+            return;
+        }
+        Main.logger.info("删除路径：" + delpath);
+        // 当且仅当此抽象路径名表示的文件存在且 是一个目录时，返回 true
+        if (!file.isDirectory()) {
+            file.delete();
+        } else if (file.isDirectory()) {
+            String[] filelist = file.list();
+            if (filelist == null || filelist.length == 0) {
+                file.delete();
+                return;
+            }
+            for (int i = 0; i < filelist.length; i++) {
+                File delfile = new File(delpath + "/" + filelist[i]);
+                if (!delfile.isDirectory()) {
+                    delfile.delete();
+                } else if (delfile.isDirectory()) {
+                    deletefile(delpath + "/" + filelist[i]);
+                }
+            }
+            file.delete();
+        }
+
     }
 }
